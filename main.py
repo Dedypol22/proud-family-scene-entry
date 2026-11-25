@@ -36,6 +36,10 @@ Candidate scores (1-5 per criterion, criteria in brief order):
     Winner (revised #7): 5 5 4 5 5 = 24 -- "twenty years later"
     strengthens the two criteria the judge weighs first (warmth and
     heartfelt affection) without spending a wasted word.
+
+Revision 2: hardened validation -- reject leading/trailing whitespace
+and control characters (other than newline) in SCENE, and verify the
+written file's character count (len(SCENE) + 1) after re-reading it.
 """
 
 import os
@@ -53,6 +57,12 @@ MAX_CHARS = 280
 def main() -> int:
     if not SCENE or not SCENE.strip():
         print("error: scene is empty", file=sys.stderr)
+        return 1
+    if SCENE != SCENE.strip():
+        print("error: scene has leading or trailing whitespace", file=sys.stderr)
+        return 1
+    if any(ord(c) < 32 and c != "\n" for c in SCENE):
+        print("error: scene contains control characters", file=sys.stderr)
         return 1
     if SCENE.count("\n") > 1 or "\r" in SCENE:
         print("error: scene must be one or two lines", file=sys.stderr)
@@ -74,6 +84,12 @@ def main() -> int:
         written = f.read()
     if written != SCENE + "\n":
         print("error: entry.txt does not match the scene", file=sys.stderr)
+        return 1
+    if len(written) != len(SCENE) + 1:
+        print(
+            f"error: entry.txt is {len(written)} chars, expected {len(SCENE) + 1}",
+            file=sys.stderr,
+        )
         return 1
 
     print(SCENE)
